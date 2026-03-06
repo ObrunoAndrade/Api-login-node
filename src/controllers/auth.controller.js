@@ -5,7 +5,7 @@ async function register(req, res) {
         const result = await authService.register(req.bdy);
         return res.status(201).json(result);        
     } catch (error) {
-        return res.status(400).json({ error: error.message });
+        next(error);
     }
 }
 
@@ -14,7 +14,7 @@ async function login(req, res) {
         const result = await authService.login(req.body);
         return res.json(result);
     } catch (error) {
-        return res.status(400).jsom({ error: error.message });
+         next(error);
     }
 }
 

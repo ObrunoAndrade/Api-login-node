@@ -1,23 +1,24 @@
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 const userRepository = require("../repositories/user.repository");
+const AppError = require("../errors/AppError")
 
 async function register({ name, email, password }) {
 
     if (!name) {
-        throw new Error("Nome é obrigatório");
+        throw new AppError("Nome é obrigatório");
     };
     if (!email) {
-        throw new Error("Email é obrigatório");
+        throw new AppError("Email é obrigatório", 409);
     };
     if (!password) {
-        throw new Error("Senha é obrigatória");
+        throw new AppError("Senha é obrigatória");
     };
 
     const userExists = await userRepository.fincByEmail(email);
 
     if (userExists) {
-        throw new Error("Email já cadastrado");
+        throw new AppError("Email já cadastrado");
     };
 
     const passwordHasj = await bcrypt.hash(password, 10);
@@ -38,22 +39,22 @@ async function register({ name, email, password }) {
 async function login({ email, password }) {
 
     if (!email) {
-        throw new Error("Email é obrigatório");
+        throw new AppError("Email é obrigatório");
     };
     if (!password) {
-        throw new Error("Senha é obrigatória");
+        throw new AppError("Senha é obrigatória");
     }
 
-    const user = await user.userRepository.findByEmail(email);
+    const user = await userRepository.findByEmail(email);
 
     if (!user) {
-        throw new Error("Email ou senha inválidos");
+        throw new AppError("Email ou senha inválidos");
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-        throw new Error("Email ou senha inválidos");
+        throw new AppError("Email ou senha inválidos");
     }
 
     const tokwn = jwt.sign(
