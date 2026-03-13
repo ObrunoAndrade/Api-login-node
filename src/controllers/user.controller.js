@@ -1,4 +1,4 @@
-const prisma = require("../src/config/prisma");
+const prisma = require("../config/prisma");
 
 exports.me =  async (req, res) => {
     const user = await prisma.user.findUnique({
