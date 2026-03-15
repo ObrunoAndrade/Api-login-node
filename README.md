@@ -1,60 +1,89 @@
-# 🚀 API Login - Node.js + Prisma
+# 🚀 Auth API - Node.js + Prisma + PostgreSQL
 
-API de autenticação e gerenciamento de usuários construída com Node.js, Prisma ORM e PostgreSQL.
-
----
-
-## 🧱 Tecnologias
-
-- Node.js
-- Express
-- Prisma ORM
-- PostgreSQL
-- JWT (JSON Web Token)
-- bcrypt
+API de autenticação completa com JWT, Refresh Token e rotas protegidas, construída com Node.js, Express, Prisma ORM e PostgreSQL seguindo arquitetura em camadas.
 
 ---
 
-## 📂 Estrutura do Projeto
+## 🧱 Tecnologias utilizadas
+
+* Node.js
+* Express
+* Prisma ORM
+* PostgreSQL
+* JWT (JSON Web Token)
+* bcrypt
+* dotenv
+* Zod
+* Middleware de autenticação
+* Middleware de erro
+* Logger de requisições
+
+---
+
+## 📂 Arquitetura do projeto
+
+Estrutura organizada seguindo padrão profissional em camadas:
 
 ```
 src/
  ├── config/
  │    └── prisma.js
+ │
+ ├── controllers/
+ │    ├── auth.controller.js
+ │    └── user.controller.js
+ │
+ ├── services/
+ │    └── auth.service.js
+ │
+ ├── repositories/
+ │    └── user.repository.js
+ │
  ├── routes/
  │    ├── auth.routes.js
  │    └── user.routes.js
- ├── server.js
-
-controllers/
- ├── auth.controller.js
- └── user.controller.js
-
-middlewares/
- └── auth.middleware.js
+ │
+ ├── middlewares/
+ │    ├── auth.middleware.js
+ │    ├── error.middleware.js
+ │    ├── logger.middleware.js
+ │
+ ├── validators/
+ │    └── auth.validator.js
+ │
+ └── server.js
 
 prisma/
  ├── schema.prisma
  └── migrations/
+
+logs/
 ```
 
 ---
 
 ## 🔐 Funcionalidades
 
-- Registro de usuário
-- Login com JWT
-- Proteção de rotas
-- Hash de senha com bcrypt
-- Validação de autenticação via middleware
+✅ Registro de usuário
+✅ Login com JWT
+✅ Refresh Token
+✅ Logout
+✅ Rotas protegidas
+✅ Middleware de autenticação
+✅ Middleware de erro global
+✅ Logger de requisições
+✅ Hash de senha com bcrypt
+✅ Prisma ORM com PostgreSQL
+✅ Arquitetura em camadas
+✅ Validação de dados
 
 ---
 
-## ⚙️ Configuração do Projeto
+## ⚙️ Configuração do projeto
 
-### 1️⃣ Clonar o repositório
+### 1️⃣ Clonar repositório
 
-```bash
+```
 git clone https://github.com/ObrunoAndrade/Api-login-node.git
 cd Api-login-node
 ```
@@ -63,26 +92,36 @@ cd Api-login-node
 
 ### 2️⃣ Instalar dependências
 
-```bash
+```
 npm install
 ```
 
 ---
 
-### 3️⃣ Configurar variáveis de ambiente
+### 3️⃣ Criar arquivo .env
 
-Crie um arquivo `.env` baseado no `.env.example`:
+Crie um arquivo `.env` na raiz:
 
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/database"
-JWT_SECRET="sua_chave_secreta"
+```
+PORT=3000
+
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/api"
+
+JWT_SECRET="secret"
+JWT_REFRESH_SECRET="refresh_secret"
 ```
 
 ---
 
-### 4️⃣ Rodar migrations
+### 4️⃣ Rodar banco de dados
 
-```bash
+```
+npx prisma db push
+```
+
+ou
+
+```
 npx prisma migrate dev
 ```
 
@@ -90,7 +129,7 @@ npx prisma migrate dev
 
 ### 5️⃣ Gerar Prisma Client
 
-```bash
+```
 npx prisma generate
 ```
 
@@ -98,11 +137,11 @@ npx prisma generate
 
 ### 6️⃣ Iniciar servidor
 
-```bash
+```
 npm run dev
 ```
 
-Servidor rodando em:
+Servidor:
 
 ```
 http://localhost:3000
@@ -114,32 +153,39 @@ http://localhost:3000
 
 ### 🔑 Auth
 
-| Método | Rota            | Descrição        |
-|--------|-----------------|------------------|
-| POST   | /auth/register  | Criar usuário    |
-| POST   | /auth/login     | Login do usuário |
+| Método | Rota           | Descrição        |
+| ------ | -------------- | ---------------- |
+| POST   | /auth/register | Criar usuário    |
+| POST   | /auth/login    | Login            |
+| POST   | /auth/refresh  | Gerar novo token |
+| POST   | /auth/logout   | Logout           |
 
 ---
 
 ### 👤 User
 
-| Método | Rota      | Protegida |
-|--------|-----------|----------|
-| GET    | /users    | ✅ JWT   |
+| Método | Rota | Protegida |
+| ------ | ---- | --------- |
+| GET    | /me  | ✅ JWT     |
+
+Header obrigatório:
+
+```
+Authorization: Bearer TOKEN
+```
 
 ---
 
-## 🗄️ Banco de Dados
+## 🗄️ Modelo de Usuário
 
-Modelo User:
-
-```prisma
+```
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  password     String
+  refreshToken String?
+  createdAt    DateTime @default(now())
 }
 ```
 
@@ -147,24 +193,50 @@ model User {
 
 ## 🔒 Segurança
 
-- Senhas armazenadas com hash (bcrypt)
-- Autenticação via JWT
-- Middleware para rotas protegidas
-- Variáveis sensíveis via .env
+* Senhas com hash usando bcrypt
+* JWT com expiração
+* Refresh token salvo no banco
+* Middleware de autenticação
+* Validação de dados
+* Variáveis sensíveis via .env
 
 ---
 
-## 📚 Próximos Passos
+## 📄 Logs
 
-- Refresh token
-- Validação com Zod ou Joi
-- Logs estruturados
-- Docker
-- Deploy em produção
+Logs são salvos em:
+
+```
+logs/combined.log
+logs/error.log
+```
+
+---
+
+## 📦 Scripts
+
+```
+npm run dev
+npm start
+npx prisma studio
+```
+
+---
+
+## 🎯 Objetivo do projeto
+
+Projeto criado para praticar:
+
+* Backend com Node.js
+* Prisma ORM
+* Autenticação com JWT
+* Refresh Token
+* Arquitetura profissional
+* Boas práticas de API
 
 ---
 
 ## 👨‍💻 Autor
 
-Bruno Andrade  
-Desenvolvedor Backend em formação 🚀
+Bruno Andrade
+Backend Developer 🚀
